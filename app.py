@@ -7,6 +7,7 @@ from statistics import mode
 import string
 import random
 import sys
+import wave
 
 
 sys.path.insert(0,'/erus/')
@@ -26,7 +27,7 @@ def convert(f):
 	swidth = spf.getsampwidth()
 	signal = spf.readframes(-1)
 	spf.close()
-	r = f.split('.')[:-1]+"_c.wav"
+	r = f.split('.')[:-1][0]+"_c.wav"
 	wf = wave.open(r, 'wb')
 	wf.setnchannels(1)
 	wf.setsampwidth(swidth)
@@ -73,7 +74,7 @@ def splitAudio(speaker, audiofile):
 		chunk = chunk_silent+chunk+chunk_silent
 		filename = "/exported/"+str(segment['i']) + "_{}".format(i)+".wav"
 		chunk.export(filename, bitrate ='16k', format ="wav")
-		newname = filename.split('.')[:-1]+''.join(random.choices(string.ascii_uppercase + string.digits, k=3))+'.wav'
+		newname = filename.split('.')[:-1][0]+''.join(random.choices(string.ascii_uppercase + string.digits, k=3))+'.wav'
 		subprocess.call(['python3','convert_wavs.py',filename,newname])
 		if(segment['i'] == 1):
 			spk1.append(sentimentAnalysis(newname))
