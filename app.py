@@ -76,6 +76,7 @@ def splitAudio(speaker, audiofile):
 		chunk.export(filename, bitrate ='16k', format ="wav")
 		newname = filename.split('.')[:-1][0]+''.join(random.choices(string.ascii_uppercase + string.digits, k=3))+'.wav'
 		subprocess.call(['python3','convert_wavs.py',filename,newname])
+		os.chdir('/erus')
 		if(segment['i'] == 1):
 			spk1.append(sentimentAnalysis(newname))
 		else:
