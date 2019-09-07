@@ -1,27 +1,42 @@
+import os
 import subprocess
 import math
 from pydub import AudioSegment
-from deep_emotion_recognition import DeepEmotionRecognizer
 from glob import glob
 from statistics import mode
+import string
+import random
+import sys
+
+
+sys.path.insert(0,'/erus/')
+
+from deep_emotion_recognition import DeepEmotionRecognizer
+
+# initialize instance
+# inherited from emotion_recognition.EmotionRecognizer
+# default parameters (LSTM: 128x2, Dense:128x2)
+deeprec = DeepEmotionRecognizer(emotions=['angry', 'sad', 'neutral', 'ps', 'happy'], n_rnn_layers=2, n_dense_layers=2, rnn_units=128, dense_units=128)
+# train the model
+deeprec.train()
 
 def convert(f):
-	spf = wave.open(f, 'rb')                  
-    CHANNELS = spf.getnchannels()
-    swidth = spf.getsampwidth()
-    signal = spf.readframes(-1)
-    spf.close()
-    r = f.split('.')[:-1]+"_c.wav"
-    wf = wave.open(r, 'wb')
-    wf.setnchannels(CHANNELS)
-    wf.setsampwidth(swidth)
-    wf.setframerate(16000)
-    wf.writeframes(signal)
-    wf.close()
-    return(r)
+	spf = wave.open(f, 'rb')                 
+	CHANNELS = spf.getnchannels()
+	swidth = spf.getsampwidth()
+	signal = spf.readframes(-1)
+	spf.close()
+	r = f.split('.')[:-1]+"_c.wav"
+	wf = wave.open(r, 'wb')
+	wf.setnchannels(1)
+	wf.setsampwidth(swidth)
+	wf.setframerate(16000)
+	wf.writeframes(signal)
+	wf.close()
+    	return(r)
 
 def doDiarize(filename):
-	subprocess.call(['cd', '/speaker-diarization'])
+	os.chdir('/speaker-diarization/')
 	subprocess.call(['./spk-diarization2.py', filename])
 	output = str(subprocess.check_output(['cat', 'stdout']), 'utf-8')
 	return output
@@ -56,35 +71,32 @@ def splitAudio(speaker, audiofile):
 	for segment in speaker:
 		chunk = conv[segment['start']*1000:segment['end']*1000]
 		chunk = chunk_silent+chunk+chunk_silent
-		filename = "/exported/"+segment['i'] + "_{}".format(i)+".wav"
+		filename = "/exported/"+str(segment['i']) + "_{}".format(i)+".wav"
 		chunk.export(filename, bitrate ='16k', format ="wav")
+		newname = filename.split('.')[:-1]+''.join(random.choices(string.ascii_uppercase + string.digits, k=3))+'.wav'
+		subprocess.call(['python3','convert_wavs.py',filename,newname])
 		if(segment['i'] == 1):
-			spk1.append(sentimentAnalysis(filename))
+			spk1.append(sentimentAnalysis(newname))
 		else:
-			spk2.append(sentimentAnalysis(filename))
+			spk2.append(sentimentAnalysis(newname))
+		subprocess.call(['rm',filename,newname])
 		i += 1
-	print("speaker1 ",mode(spk1))
-	print("speaker2 ",mode(spk2))
+	with open('/watersheep-I-MAN98.csv') as f:
+		f.write('person1,'+mode(spk1)+',person2,'+mode(spk2))
 		
 def sentimentAnalysis(filename):
-	# initialize instance
-	# inherited from emotion_recognition.EmotionRecognizer
-	# default parameters (LSTM: 128x2, Dense:128x2)
-	deeprec = DeepEmotionRecognizer(emotions=['angry', 'sad', 'neutral', 'ps', 'happy'], n_rnn_layers=2, n_dense_layers=2, rnn_units=128, dense_units=128)
-	# train the model
-	deeprec.train()
 	# get the accuracy
 	# predict angry audio sample
 	prediction = deeprec.predict(filename)
-	print(f"Prediction: {prediction}")
 	return prediction
 	
 def main():
-	files = glob('/clips/*.wav')
+	files = glob('/watersheep/clips/*.wav')
 	for f in files:
 		splitAudio(parse(doDiarize(convert(f))), f)
 		
-	
+		
+main()	
 	
 		
 		
