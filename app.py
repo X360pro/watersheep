@@ -33,7 +33,7 @@ def convert(f):
 	wf.setframerate(16000)
 	wf.writeframes(signal)
 	wf.close()
-    	return(r)
+	return(r)
 
 def doDiarize(filename):
 	os.chdir('/speaker-diarization/')
