@@ -83,8 +83,11 @@ def splitAudio(speaker, audiofile):
 			spk2.append(sentimentAnalysis(newname))
 		subprocess.call(['rm',filename,newname])
 		i += 1
-	with open('/watersheep-I-MAN98.csv') as f:
-		f.write('person1,'+mode(spk1)+',person2,'+mode(spk2))
+	f=open('/watersheep-I-MAN98.csv','w+')
+	f.close()
+	f=open('/watersheep-I-MAN98.csv','a+')
+	f.write('person1,'+mode(spk1)+',person2,'+mode(spk2))
+	f.close()
 		
 def sentimentAnalysis(filename):
 	# get the accuracy
