@@ -75,14 +75,15 @@ def splitAudio(speaker, audiofile):
 		filename = "/exported/"+str(segment['i']) + "_{}".format(i)+".wav"
 		chunk.export(filename, bitrate ='16k', format ="wav")
 		newname = filename.split('.')[:-1][0]+''.join(random.choices(string.ascii_uppercase + string.digits, k=3))+'.wav'
-		subprocess.call(['python3','convert_wavs.py',filename,newname])
 		os.chdir('/erus')
+		subprocess.call(['python3','convert_wavs.py',filename,newname])
 		if(segment['i'] == 1):
 			spk1.append(sentimentAnalysis(newname))
 		else:
 			spk2.append(sentimentAnalysis(newname))
 		subprocess.call(['rm',filename,newname])
 		i += 1
+	os.chdir('/')
 	f=open('/watersheep-I-MAN98.csv','w+')
 	f.close()
 	f=open('/watersheep-I-MAN98.csv','a+')
