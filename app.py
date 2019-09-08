@@ -21,6 +21,9 @@ deeprec = DeepEmotionRecognizer(emotions=['angry', 'sad', 'neutral', 'ps', 'happ
 # train the model
 deeprec.train()
 
+n1 = None
+n2 = None
+
 def convert(f):
 	spf = wave.open(f, 'rb')                 
 	CHANNELS = spf.getnchannels()
@@ -44,9 +47,11 @@ def doDiarize(filename):
 
 
 def parse(output):
+	global n1, n2
 	string = output
 	## audio=Audiosamples/1-r.wav lna=a_32 start-time=178.492 end-time=212.968 speaker=speaker_2
 	speaker = list()
+	m = []
 	for line in string.split('\n'):
 		if (line):
 			terms = line.split(' ')
@@ -54,12 +59,15 @@ def parse(output):
 			segment['start'] = round(float(terms[2].split('=')[-1])/3, 3)
 			segment['end'] = 	round(float(terms[3].split('=')[-1])/3, 3)
 			segment['i'] = int(terms[4].split('_')[-1])
-		
+			m.append(segment['i'])
 			if speaker and speaker[-1]['i'] == segment['i'] :
 				speaker[-1]['end'] = segment['end']
 			else :
 				speaker.append(segment)
-
+	
+	n1 = mode(m)
+	m = [x for x in m if x!=n1]
+	n2 = mode(m)
 	return speaker
 
 def splitAudio(speaker, audiofile):
@@ -77,9 +85,9 @@ def splitAudio(speaker, audiofile):
 		newname = filename.split('.')[:-1][0]+''.join(random.choices(string.ascii_uppercase + string.digits, k=3))+'.wav'
 		os.chdir('/erus')
 		subprocess.call(['python3','convert_wavs.py',filename,newname])
-		if(segment['i'] == 1):
+		if(segment['i'] == n1):
 			spk1.append(sentimentAnalysis(newname))
-		else:
+		if(segment['i'] == n2):
 			spk2.append(sentimentAnalysis(newname))
 		subprocess.call(['rm',filename,newname])
 		i += 1
