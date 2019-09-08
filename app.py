@@ -86,7 +86,7 @@ def splitAudio(speaker, audiofile):
 	f=open('/watersheep-I-MAN98.csv','w+')
 	f.close()
 	f=open('/watersheep-I-MAN98.csv','a+')
-	f.write('person1,'+mode(spk1)+',person2,'+mode(spk2))
+	f.write(audiofile+',person1,'+mode(spk1)+',person2,'+mode(spk2))
 	f.close()
 		
 def sentimentAnalysis(filename):
