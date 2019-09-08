@@ -92,8 +92,6 @@ def splitAudio(speaker, audiofile):
 		subprocess.call(['rm',filename,newname])
 		i += 1
 	os.chdir('/')
-	f=open('/watersheep-I-MAN98.csv','w+')
-	f.close()
 	f=open('/watersheep-I-MAN98.csv','a+')
 	f.write(audiofile+',person1,'+mode(spk1)+',person2,'+mode(spk2))
 	f.close()
@@ -106,6 +104,8 @@ def sentimentAnalysis(filename):
 	
 def main():
 	files = glob('/watersheep/clips/*.wav')
+	f=open('/watersheep-I-MAN98.csv','w+')
+	f.close()
 	for f in files:
 		splitAudio(parse(doDiarize(convert(f))), f)
 		
